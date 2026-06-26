@@ -1,4 +1,4 @@
-export type HostType = "div" | "span";
+export type HostType = keyof HTMLElementTagNameMap;
 export type HostAttributes = {
   id?: string;
 };

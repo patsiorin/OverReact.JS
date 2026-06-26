@@ -1,0 +1,23 @@
+{
+  "name": "overreact.js",
+  "version": "1.0.0",
+  "description": "> Building my own clone of React from scratch — to actually understand how it works.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite examples/counter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/patsiorin/OverReact.JS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/patsiorin/OverReact.JS/issues"
+  },
+  "homepage": "https://github.com/patsiorin/OverReact.JS#readme",
+  "devDependencies": {
+    "vite": "^8.1.0"
+  }
+}
