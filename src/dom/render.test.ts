@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createElement } from "./createElement";
+import { createElement } from "../core/createElement";
 import { render } from "./render";
 
 describe("render", () => {

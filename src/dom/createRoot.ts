@@ -1,5 +1,5 @@
+import type { OverReactElement } from "../core/types";
 import { render as mount } from "./render";
-import type { OverReactElement } from "./types";
 
 let activeUpdate: (() => void) | null = null;
 

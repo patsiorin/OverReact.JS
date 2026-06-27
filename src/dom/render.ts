@@ -1,5 +1,5 @@
+import type { OverReactElement } from "../core/types";
 import { EVENT_PROPS } from "./events";
-import type { OverReactElement } from "./types";
 
 function isEventProp(key: string): key is keyof typeof EVENT_PROPS {
   return key in EVENT_PROPS;

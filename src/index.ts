@@ -1,5 +1,5 @@
-export { createElement } from "./createElement";
-export { createRoot } from "./createRoot";
-export { requestRender } from "./createRoot";
-export { render } from "./render";
-export type { OverReactElement } from "./types";
+export { createElement } from "./core/createElement";
+export type { OverReactElement } from "./core/types";
+export { createRoot } from "./dom/createRoot";
+export { requestRender } from "./dom/createRoot";
+export { render } from "./dom/render";
