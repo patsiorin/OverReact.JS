@@ -1,4 +1,4 @@
-import type { HostType, HostAttributes, OverReactElement } from "./types";
+import type { HostAttributes, HostType, OverReactElement } from "./types";
 
 export function createElement(
   type: HostType,
