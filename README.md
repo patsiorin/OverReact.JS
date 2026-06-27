@@ -17,33 +17,42 @@ That separation is the whole trick. Because descriptions are cheap, inert data, 
 
 ## Roadmap
 
-| #   | Milestone                | What it does                                                                                           | Status                       |
-| --- | ------------------------ | ------------------------------------------------------------------------------------------------------ | ---------------------------- |
-| 1   | `createElement`          | Turn nested calls into a tree of `{ type, props, children }` objects; wrap raw strings into text nodes | ✅ Done                      |
-| 2   | `render`                 | Walk the element tree and produce real DOM                                                             | ✅ Done                      |
-| 3   | Events + naive re-render | Attach `on*` handlers; re-render on state change by wiping and rebuilding (intentionally inefficient)  | 🚧 In progress — events done |
-| 4   | Reconciliation           | Diff old vs new tree; touch only what changed — the heart of React                                     | ◻️ Planned                   |
-| 5   | Hooks                    | `useState`, `useEffect`                                                                                | ◻️ Planned                   |
+| #   | Milestone                | What it does                                                                                                                | Status     |
+| --- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| 1   | `createElement`          | Turn nested calls into a tree of `{ type, props, children }` objects; wrap raw strings into text nodes                      | ✅ Done    |
+| 2   | `render`                 | Walk the element tree and produce real DOM                                                                                  | ✅ Done    |
+| 3   | Events + naive re-render | Attach `on*` handlers; `createRoot` runtime re-renders on state change by wiping and rebuilding (intentionally inefficient) | ✅ Done    |
+| 4   | Reconciliation           | Diff old vs new tree; touch only what changed — the heart of React                                                          | ⏳ Next    |
+| 5   | Hooks                    | `useState`, `useEffect`                                                                                                     | ◻️ Planned |
 
 ## What works today
 
-You can build an element tree with `createElement`, mount it to the DOM with `render`, and wire up event handlers. There's no JSX and no build step for the library itself — by design. Calling `createElement` by hand keeps the mechanics visible instead of hiding them behind a compiler.
+You can build an element tree with `createElement`, mount it with the `createRoot` runtime, wire up event handlers, and re-render on state change. There's no JSX and no build step for the library itself — by design. Calling `createElement` by hand keeps the mechanics visible instead of hiding them behind a compiler.
 
 ```ts
-import { createElement, render } from "./src";
+import { createElement, createRoot, requestRender } from "./src";
 
-const tree = createElement(
-  "div",
-  { id: "app" },
-  createElement("h1", {}, "OverReact.JS"),
+let count = 0;
+
+const App = () =>
   createElement(
-    "button",
-    { onClick: () => console.log("clicked!") },
-    "ping the console",
-  ),
-);
+    "div",
+    { id: "app" },
+    createElement("p", {}, `count: ${count}`),
+    createElement(
+      "button",
+      {
+        onClick: () => {
+          count++;
+          requestRender();
+        },
+      },
+      "increment",
+    ),
+  );
 
-render(tree, document.getElementById("root"));
+const root = createRoot(document.getElementById("root"));
+root.render(App);
 ```
 
 Under the hood, `createElement` does exactly two jobs and _only_ these two: it packs everything into a uniform object tree, and it wraps raw strings into a special `TEXT_ELEMENT` node so every child has the same shape. For example:
@@ -68,7 +77,9 @@ Under the hood, `createElement` does exactly two jobs and _only_ these two: it p
 }
 ```
 
-Then `render` walks that tree and produces real DOM: it creates a node per element (text nodes for `TEXT_ELEMENT`), sets attributes, attaches `on*` props as event listeners via an event registry, recurses into children, and mounts. Deliberately minimal — the interesting work is still ahead, in reconciliation.
+Then `render` walks that tree and produces real DOM: it creates a node per element (text nodes for `TEXT_ELEMENT`), sets attributes, attaches `on*` props as event listeners via an event registry, recurses into children, and mounts. The `createRoot` runtime owns re-rendering: `root.render(App)` mounts a component (a function returning a tree), and `requestRender()` triggers a redraw — currently by wiping the container and rebuilding from scratch.
+
+That rebuild-everything approach is deliberately naive: re-rendering destroys and recreates the entire DOM, so live state like input focus and text is lost on every update. Feeling that limitation is the whole point — it's exactly what reconciliation (next) fixes.
 
 ## Running the demo
 
@@ -96,6 +107,7 @@ src/
   createElement.ts  Milestone 1
   render.ts         Milestone 2 — mount the tree to the DOM
   events.ts         event registry (prop name -> DOM event name)
+  createRoot.ts     Milestone 3 — runtime that owns re-rendering
   index.ts          public API barrel
 examples/
   counter/          demo app served by Vite

@@ -1,45 +1,46 @@
-import { createElement, render } from "../../src";
+import { createElement, createRoot, requestRender } from "../../src";
 
-const tree = createElement(
-  "div",
-  { id: "app" },
-  createElement(
-    "h1",
-    { onClick: () => console.log("clicked the title") },
-    "OverReact.JS",
-  ),
-  createElement(
-    "p",
-    { id: "tagline" },
-    "A ",
-    createElement("strong", {}, "tiny"),
-    " React clone.",
-  ),
-  createElement(
-    "ul",
-    { id: "list" },
-    createElement(
-      "li",
-      { onClick: () => console.log("describe UI as objects") },
-      "describe UI as objects",
-    ),
-    createElement(
-      "li",
-      { onClick: () => console.log("render objects to DOM") },
-      "render objects to DOM",
-    ),
-    createElement("li", {}, "diff ", createElement("em", {}, "(coming soon)")),
-  ),
-  createElement(
-    "button",
-    { id: "ping", onClick: (event) => console.log("button clicked", event) },
-    "ping the console",
-  ),
-  createElement(
-    "footer",
-    { id: "foot" },
-    createElement("span", {}, "built by hand"),
-  ),
-);
+// --- State (the M3 hack: a module-level variable; useState replaces this in M5) ---
+let count = 0;
 
-render(tree, document.getElementById("root"));
+// --- UI = f(state): the tree is rebuilt from `count` on every render ---
+const App = () =>
+  createElement(
+    "div",
+    { id: "app" },
+    createElement("h1", {}, "OverReact.JS"),
+
+    // The counter: clicking mutates state, then asks the runtime to redraw.
+    createElement("p", { id: "count" }, `count: ${count}`),
+    createElement(
+      "button",
+      {
+        id: "increment",
+        onClick: () => {
+          count++;
+          requestRender();
+        },
+      },
+      "increment",
+    ),
+
+    // The demonstration of WHY naive re-render is bad:
+    // type something here, then click increment — your text and cursor
+    // focus vanish, because replaceChildren() destroys this real <input>
+    // node and builds a fresh empty one every render.
+    createElement(
+      "p",
+      { id: "hint" },
+      "Type below, then click increment — watch the input reset:",
+    ),
+    createElement("input", { id: "field" }),
+
+    createElement(
+      "footer",
+      { id: "foot" },
+      createElement("span", {}, "M3: naive re-render (M4 will fix the reset)"),
+    ),
+  );
+
+const root = createRoot(document.getElementById("root"));
+root.render(App);
