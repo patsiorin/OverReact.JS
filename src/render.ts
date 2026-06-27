@@ -1,4 +1,9 @@
+import { EVENT_PROPS } from "./events";
 import type { OverReactElement } from "./types";
+
+function isEventProp(key: string): key is keyof typeof EVENT_PROPS {
+  return key in EVENT_PROPS;
+}
 
 export function render(
   tree: OverReactElement,
@@ -12,7 +17,16 @@ export function render(
     const element = document.createElement(tree.type);
 
     for (const [attributeName, attributeValue] of Object.entries(tree.props)) {
-      if (attributeName !== "children") {
+      if (attributeName === "children") {
+        continue;
+      }
+
+      if (isEventProp(attributeName) && typeof attributeValue === "function") {
+        element.addEventListener(
+          EVENT_PROPS[attributeName],
+          attributeValue as EventListener,
+        );
+      } else {
         element.setAttribute(attributeName, String(attributeValue));
       }
     }
