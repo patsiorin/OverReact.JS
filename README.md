@@ -2,7 +2,7 @@
 
 > Building my own clone of React from scratch — to actually understand how it works.
 
-OverReact.JS is an educational reimplementation of a React-style UI library, written in TypeScript. The goal isn't to compete with React; it's to demystify it. By rebuilding the core pieces by hand — element creation, rendering, reconciliation, hooks — I get to understand *why* React is shaped the way it is, instead of taking it on faith.
+OverReact.JS is an educational reimplementation of a React-style UI library, written in TypeScript. The goal isn't to compete with React; it's to demystify it. By rebuilding the core pieces by hand — element creation, rendering, reconciliation, hooks — I get to understand _why_ React is shaped the way it is, instead of taking it on faith.
 
 This repo is a learning journey in progress. Follow along.
 
@@ -11,19 +11,19 @@ This repo is a learning journey in progress. Follow along.
 React (and this clone) splits the world in two:
 
 - **Describing** the UI — cheap, pure, side-effect-free. `createElement` just turns nested calls into a plain tree of objects (a "virtual DOM"). It touches nothing, renders nothing, knows nothing about the browser.
-- **Applying** that description — turning the object tree into real DOM, and later, diffing two trees to make the *minimum* set of changes.
+- **Applying** that description — turning the object tree into real DOM, and later, diffing two trees to make the _minimum_ set of changes.
 
 That separation is the whole trick. Because descriptions are cheap, inert data, you can build them freely and compare them efficiently — which is what makes reconciliation possible. Everything in this project hangs off that one idea.
 
 ## Roadmap
 
-| # | Milestone | What it does | Status |
-|---|-----------|--------------|--------|
-| 1 | `createElement` | Turn nested calls into a tree of `{ type, props, children }` objects; wrap raw strings into text nodes | ✅ Done |
-| 2 | `render` | Walk the element tree and produce real DOM | ✅ Done |
-| 3 | Events + naive re-render | Attach `on*` handlers; re-render on state change by wiping and rebuilding (intentionally inefficient) | 🚧 In progress — events done |
-| 4 | Reconciliation | Diff old vs new tree; touch only what changed — the heart of React | ◻️ Planned |
-| 5 | Hooks | `useState`, `useEffect` | ◻️ Planned |
+| #   | Milestone                | What it does                                                                                           | Status                       |
+| --- | ------------------------ | ------------------------------------------------------------------------------------------------------ | ---------------------------- |
+| 1   | `createElement`          | Turn nested calls into a tree of `{ type, props, children }` objects; wrap raw strings into text nodes | ✅ Done                      |
+| 2   | `render`                 | Walk the element tree and produce real DOM                                                             | ✅ Done                      |
+| 3   | Events + naive re-render | Attach `on*` handlers; re-render on state change by wiping and rebuilding (intentionally inefficient)  | 🚧 In progress — events done |
+| 4   | Reconciliation           | Diff old vs new tree; touch only what changed — the heart of React                                     | ◻️ Planned                   |
+| 5   | Hooks                    | `useState`, `useEffect`                                                                                | ◻️ Planned                   |
 
 ## What works today
 
@@ -32,7 +32,9 @@ You can build an element tree with `createElement`, mount it to the DOM with `re
 ```ts
 import { createElement, render } from "./src";
 
-const tree = createElement("div", { id: "app" },
+const tree = createElement(
+  "div",
+  { id: "app" },
   createElement("h1", {}, "OverReact.JS"),
   createElement(
     "button",
@@ -44,7 +46,7 @@ const tree = createElement("div", { id: "app" },
 render(tree, document.getElementById("root"));
 ```
 
-Under the hood, `createElement` does exactly two jobs and *only* these two: it packs everything into a uniform object tree, and it wraps raw strings into a special `TEXT_ELEMENT` node so every child has the same shape. For example:
+Under the hood, `createElement` does exactly two jobs and _only_ these two: it packs everything into a uniform object tree, and it wraps raw strings into a special `TEXT_ELEMENT` node so every child has the same shape. For example:
 
 ```jsonc
 {
@@ -52,12 +54,17 @@ Under the hood, `createElement` does exactly two jobs and *only* these two: it p
   "props": {
     "id": "foo",
     "children": [
-      { "type": "span", "props": { "children": [
-        { "type": "TEXT_ELEMENT", "props": { "nodeValue": "hello" } }
-      ] } },
-      { "type": "TEXT_ELEMENT", "props": { "nodeValue": "world" } }
-    ]
-  }
+      {
+        "type": "span",
+        "props": {
+          "children": [
+            { "type": "TEXT_ELEMENT", "props": { "nodeValue": "hello" } },
+          ],
+        },
+      },
+      { "type": "TEXT_ELEMENT", "props": { "nodeValue": "world" } },
+    ],
+  },
 }
 ```
 
@@ -96,7 +103,7 @@ examples/
 
 ## Tech notes
 
-Written in TypeScript with `strict` mode on. The types are intentionally honest: children arrive loose (`OverReactElement | string`) and are normalized to a uniform `OverReactElement[]`. Event handler types are *derived* from the event registry via `HTMLElementEventMap`, so they stay precise (an `onClick` handler receives a real `PointerEvent`) without manual upkeep. Casts are avoided except where they encode a runtime invariant the type system genuinely can't express.
+Written in TypeScript with `strict` mode on. The types are intentionally honest: children arrive loose (`OverReactElement | string`) and are normalized to a uniform `OverReactElement[]`. Event handler types are _derived_ from the event registry via `HTMLElementEventMap`, so they stay precise (an `onClick` handler receives a real `PointerEvent`) without manual upkeep. Casts are avoided except where they encode a runtime invariant the type system genuinely can't express.
 
 ## License
 

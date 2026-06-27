@@ -1,4 +1,4 @@
-import { EVENT_PROPS } from "./events";
+import type { EVENT_PROPS } from "./events";
 
 export type HostType = keyof HTMLElementTagNameMap;
 

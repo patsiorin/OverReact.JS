@@ -1,10 +1,20 @@
 {
   "name": "overreact.js",
   "version": "1.0.0",
-  "description": "> Building my own clone of React from scratch — to actually understand how it works.",
-  "main": "index.js",
+  "description": "Building my own clone of React from scratch — to actually understand how it works.",
+  "type": "module",
   "scripts": {
-    "dev": "vite examples/counter"
+    "dev": "vite examples/counter",
+    "build": "vite build examples/counter",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -12,12 +22,31 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "Unlicense",
   "bugs": {
     "url": "https://github.com/patsiorin/OverReact.JS/issues"
   },
   "homepage": "https://github.com/patsiorin/OverReact.JS#readme",
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,json,md,html,css}": [
+      "prettier --write"
+    ]
+  },
   "devDependencies": {
-    "vite": "^8.1.0"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.6.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "jsdom": "^29.1.1",
+    "lint-staged": "^17.0.8",
+    "prettier": "^3.9.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.62.0",
+    "vite": "^8.1.0",
+    "vitest": "^4.1.9"
   }
 }
