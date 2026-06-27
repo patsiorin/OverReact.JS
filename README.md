@@ -101,17 +101,23 @@ The vocabulary mirrors React's own internals, because learning the words is part
 
 ## Project structure
 
+The source is split along React's main seam: `core/` is the platform-agnostic "describe" layer (knows nothing about the DOM); `dom/` is the "apply" layer that touches the browser. Reconciliation (Milestone 4) will land in its own `src/reconciler/`.
+
 ```
 src/
-  types.ts          shared vocabulary: OverReactElement, host + handler types
-  createElement.ts  Milestone 1
-  render.ts         Milestone 2 — mount the tree to the DOM
-  events.ts         event registry (prop name -> DOM event name)
-  createRoot.ts     Milestone 3 — runtime that owns re-rendering
+  core/             # the "describe" layer — platform-agnostic
+    createElement.ts  Milestone 1
+    types.ts          shared vocabulary: OverReactElement, host + handler types
+  dom/              # the "apply" layer — touches the browser
+    render.ts         Milestone 2 — mount the tree to the DOM
+    events.ts         event registry (prop name -> DOM event name)
+    createRoot.ts     Milestone 3 — runtime that owns re-rendering
   index.ts          public API barrel
 examples/
   counter/          demo app served by Vite
 ```
+
+Tests are colocated next to the code they cover (e.g. `core/createElement.test.ts`).
 
 ## Tech notes
 
