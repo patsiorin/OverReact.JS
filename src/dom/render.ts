@@ -11,8 +11,13 @@ export function render(
 ): void {
   if (container == null) return;
 
+  const node = createDom(tree);
+  container.appendChild(node);
+}
+
+export function createDom(tree: OverReactElement): Text | HTMLElement {
   if (tree.type === "TEXT_ELEMENT") {
-    container.appendChild(document.createTextNode(tree.props.nodeValue || ""));
+    return document.createTextNode(tree.props.nodeValue || "");
   } else {
     const element = document.createElement(tree.type);
 
@@ -21,17 +26,35 @@ export function render(
         continue;
       }
 
-      if (isEventProp(attributeName) && typeof attributeValue === "function") {
-        element.addEventListener(
-          EVENT_PROPS[attributeName],
-          attributeValue as EventListener,
-        );
-      } else {
-        element.setAttribute(attributeName, String(attributeValue));
-      }
+      setProp(element, attributeName, attributeValue);
     }
 
-    tree.props.children?.forEach((child) => render(child, element));
-    container.appendChild(element);
+    tree.props.children?.forEach((child) => {
+      element.appendChild(createDom(child));
+    });
+
+    return element;
+  }
+}
+
+export function setProp(
+  element: HTMLElement,
+  attributeName: string,
+  attributeValue: unknown,
+  oldValue?: unknown,
+): void {
+  if (isEventProp(attributeName) && typeof attributeValue === "function") {
+    if (typeof oldValue === "function") {
+      element.removeEventListener(
+        EVENT_PROPS[attributeName],
+        oldValue as EventListener,
+      );
+    }
+    element.addEventListener(
+      EVENT_PROPS[attributeName],
+      attributeValue as EventListener,
+    );
+  } else {
+    element.setAttribute(attributeName, String(attributeValue));
   }
 }

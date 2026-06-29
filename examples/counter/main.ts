@@ -10,12 +10,11 @@ const App = () =>
     { id: "app" },
     createElement("h1", {}, "OverReact.JS"),
 
-    // The counter: clicking mutates state, then asks the runtime to redraw.
+    // Text reconciliation: only this text node's value is patched.
     createElement("p", { id: "count" }, `count: ${count}`),
     createElement(
       "button",
       {
-        id: "increment",
         onClick: () => {
           count++;
           requestRender();
@@ -24,22 +23,22 @@ const App = () =>
       "increment",
     ),
 
-    // The demonstration of WHY naive re-render is bad:
-    // type something here, then click increment — your text and cursor
-    // focus vanish, because replaceChildren() destroys this real <input>
-    // node and builds a fresh empty one every render.
+    // PROP reconciliation: the SAME <p> stays in the DOM across renders,
+    // and only its `id` attribute is patched:
+    //   odd count  -> { id: "danger" }  → CSS turns it red+bold   (prop added/updated)
+    //   even count -> {}                → id attribute removed     (prop removed)
+    // Open devtools' Elements panel and watch the id attribute toggle
+    // on a node that is never recreated.
     createElement(
       "p",
-      { id: "hint" },
-      "Type below, then click increment — watch the input reset:",
+      count % 2 === 1 ? { id: "danger" } : {},
+      "status indicator (styled only on odd counts)",
     ),
-    createElement("input", { id: "field" }),
 
-    createElement(
-      "footer",
-      { id: "foot" },
-      createElement("span", {}, "M3: naive re-render (M4 will fix the reset)"),
-    ),
+    // Node-preservation proof: type here, then click increment — your
+    // text and cursor survive, because reconciliation reuses this exact node.
+    createElement("p", {}, "Type below — your text survives re-renders:"),
+    createElement("input", { id: "field" }),
   );
 
 const root = createRoot(document.getElementById("root"));

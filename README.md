@@ -17,13 +17,13 @@ That separation is the whole trick. Because descriptions are cheap, inert data, 
 
 ## Roadmap
 
-| #   | Milestone                | What it does                                                                                                                | Status     |
-| --- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| 1   | `createElement`          | Turn nested calls into a tree of `{ type, props, children }` objects; wrap raw strings into text nodes                      | ✅ Done    |
-| 2   | `render`                 | Walk the element tree and produce real DOM                                                                                  | ✅ Done    |
-| 3   | Events + naive re-render | Attach `on*` handlers; `createRoot` runtime re-renders on state change by wiping and rebuilding (intentionally inefficient) | ✅ Done    |
-| 4   | Reconciliation           | Diff old vs new tree; touch only what changed — the heart of React                                                          | ⏳ Next    |
-| 5   | Hooks                    | `useState`, `useEffect`                                                                                                     | ◻️ Planned |
+| #   | Milestone                | What it does                                                                                                                | Status  |
+| --- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ------- |
+| 1   | `createElement`          | Turn nested calls into a tree of `{ type, props, children }` objects; wrap raw strings into text nodes                      | ✅ Done |
+| 2   | `render`                 | Walk the element tree and produce real DOM                                                                                  | ✅ Done |
+| 3   | Events + naive re-render | Attach `on*` handlers; `createRoot` runtime re-renders on state change by wiping and rebuilding (intentionally inefficient) | ✅ Done |
+| 4   | Reconciliation           | Diff old vs new tree; touch only what changed — the heart of React                                                          | ✅ Done |
+| 5   | Hooks                    | `useState`, `useEffect`                                                                                                     | ⏳ Next |
 
 ## What works today
 
@@ -77,9 +77,9 @@ Under the hood, `createElement` does exactly two jobs and _only_ these two: it p
 }
 ```
 
-Then `render` walks that tree and produces real DOM: it creates a node per element (text nodes for `TEXT_ELEMENT`), sets attributes, attaches `on*` props as event listeners via an event registry, recurses into children, and mounts. The `createRoot` runtime owns re-rendering: `root.render(App)` mounts a component (a function returning a tree), and `requestRender()` triggers a redraw — currently by wiping the container and rebuilding from scratch.
+Then `render` walks that tree and produces real DOM: it creates a node per element (text nodes for `TEXT_ELEMENT`), sets attributes, attaches `on*` props as event listeners via an event registry, recurses into children, and mounts. The `createRoot` runtime owns re-rendering: `root.render(App)` mounts a component (a function returning a tree), and `requestRender()` triggers a redraw.
 
-That rebuild-everything approach is deliberately naive: re-rendering destroys and recreates the entire DOM, so live state like input focus and text is lost on every update. Feeling that limitation is the whole point — it's exactly what reconciliation (next) fixes.
+Re-rendering no longer rebuilds the DOM. The `createRoot` runtime keeps the previously rendered tree, and on each update **reconciles** it against the new one: `reconcile` walks both trees and applies the minimal set of DOM changes — creating, removing, or replacing nodes, patching text and attributes, and adding/removing event listeners (with remove-then-add so handlers never stack). Because unchanged nodes are reused rather than recreated, live DOM state — input focus, typed text, scroll position — survives across re-renders.
 
 ## Running the demo
 
@@ -88,7 +88,7 @@ npm install
 npm run dev
 ```
 
-This serves the `examples/counter` app with Vite. Open the printed URL, pop the console, and click around to see the event handlers fire.
+This serves the `examples/counter` app with Vite. Open the printed URL and click _increment_: the count text updates, the status line's `id` toggles (red on odd counts) — patched on a node that's never recreated — and anything you type into the input survives every re-render. Open devtools' Elements panel to watch the minimal DOM changes.
 
 ## A note on naming
 
@@ -101,7 +101,7 @@ The vocabulary mirrors React's own internals, because learning the words is part
 
 ## Project structure
 
-The source is split along React's main seam: `core/` is the platform-agnostic "describe" layer (knows nothing about the DOM); `dom/` is the "apply" layer that touches the browser. Reconciliation (Milestone 4) will land in its own `src/reconciler/`.
+The source is split along React's main seam: `core/` is the platform-agnostic "describe" layer (knows nothing about the DOM); `dom/` is the "apply" layer that touches the browser; `reconciler/` diffs trees and drives the DOM updates.
 
 ```
 src/
@@ -109,9 +109,11 @@ src/
     createElement.ts  Milestone 1
     types.ts          shared vocabulary: OverReactElement, host + handler types
   dom/              # the "apply" layer — touches the browser
-    render.ts         Milestone 2 — mount the tree to the DOM
+    render.ts         Milestone 2 — mount a tree to the DOM (createDom + setProp)
     events.ts         event registry (prop name -> DOM event name)
     createRoot.ts     Milestone 3 — runtime that owns re-rendering
+  reconciler/       # the diffing layer
+    reconcile.ts      Milestone 4 — diff old vs new tree, patch the DOM minimally
   index.ts          public API barrel
 examples/
   counter/          demo app served by Vite
